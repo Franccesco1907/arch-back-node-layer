@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Test and coverage output
+coverage/
+.nyc_output/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Serverless / AWS local artifacts
+.serverless/
+.aws-sam/
+lambda-deployment.zip
+
+# SonarQube / quality reports
+.scannerwork/
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary/cache directories
+.cache/
+.tmp/
+tmp/
+Usersnpm-cache/

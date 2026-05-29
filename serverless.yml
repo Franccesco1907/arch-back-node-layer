@@ -1,0 +1,129 @@
+service: arch-back-node-layer
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  memorySize: 512
+  timeout: 30
+  environment:
+    DYNAMO_TABLE: ${self:service}-${self:provider.stage}-configurations
+    USERS_TABLE: ${self:service}-${self:provider.stage}-users
+    AWS_REGION: ${self:provider.region}
+    SQS_QUEUE_URL: 
+      Ref: ProxyMessageQueue
+    SECRET_MANAGER_ARN: 
+      Ref: ProxySecrets
+    API_TIMEOUT: 30000
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+      Resource:
+        - Fn::GetAtt: [ConfigurationsTable, Arn]
+        - Fn::GetAtt: [UsersTable, Arn]
+    - Effect: Allow
+      Action:
+        - sqs:SendMessage
+      Resource:
+        - Fn::GetAtt: [ProxyMessageQueue, Arn]
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource:
+        - Ref: ProxySecrets
+
+functions:
+  proxyHandler:
+    handler: dist/index.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
+      - http:
+          path: /
+          method: ANY
+          cors: true
+
+resources:
+  Resources:
+    ConfigurationsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-${self:provider.stage}-configurations
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: operation
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          - AttributeName: operation
+            KeyType: RANGE
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
+        SSESpecification:
+          SSEEnabled: true
+
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-${self:provider.stage}-users
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
+        SSESpecification:
+          SSEEnabled: true
+
+    ProxyMessageQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-proxy-messages
+        MessageRetentionPeriod: 1209600 # 14 days
+        VisibilityTimeoutSeconds: 60
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt: [ProxyMessageDLQ, Arn]
+          maxReceiveCount: 3
+
+    ProxyMessageDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-proxy-messages-dlq
+        MessageRetentionPeriod: 1209600 # 14 days
+
+    ProxySecrets:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+        Name: ${self:service}-${self:provider.stage}-secrets
+        Description: Secrets for proxy authentication
+        SecretString: |
+          {
+            "bearer_token": "your-bearer-token-here",
+            "api_key": "your-api-key-here"
+          }
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3000
+    lambdaPort: 3002

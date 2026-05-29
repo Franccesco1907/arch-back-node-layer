@@ -1,0 +1,71 @@
+{
+  "name": "arch-back-node-layer",
+  "version": "1.0.0",
+  "description": "Node.js Lambda Layer following hexagonal architecture pattern",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts",
+    
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:contract": "vitest run tests/contract",
+    "test:architecture": "vitest run tests/architecture",
+    "test:performance": "vitest run tests/performance",
+    
+    "test:coverage": "vitest --coverage",
+    "test:coverage:unit": "vitest --coverage tests/unit",
+    "test:coverage:integration": "vitest --coverage tests/integration",
+    "test:coverage:report": "vitest --coverage --reporter=html",
+    "test:coverage:threshold": "vitest --coverage --coverage.thresholds.autoUpdate",
+    
+    "test:ci": "vitest run --coverage --reporter=junit --outputFile=coverage/junit.xml",
+    "test:sonar": "npm run test:coverage && sonar-scanner",
+    
+    "lint": "eslint src tests --ext .ts",
+    "lint:fix": "eslint src tests --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+    
+    "quality": "npm run lint && npm run format:check && npm run test:coverage",
+    "quality:fix": "npm run lint:fix && npm run format && npm run test:coverage",
+    
+    "lambda:build": "npm run build && zip -r lambda-deployment.zip dist/ node_modules/",
+    "lambda:local": "sam local start-api",
+    "lambda:test": "sam local invoke",
+    
+    "clean": "rimraf dist coverage .nyc_output",
+    "clean:install": "npm run clean && rm -rf node_modules && npm install",
+    
+    "precommit": "npm run quality",
+    "prepush": "npm run test:ci"
+  },
+  "keywords": ["lambda", "aws", "hexagonal-architecture", "nodejs", "typescript"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.658.1",
+    "@aws-sdk/client-secrets-manager": "^3.658.1",
+    "@aws-sdk/client-sqs": "^3.658.1",
+    "@aws-sdk/util-dynamodb": "^3.658.1",
+    "@fastify/cors": "^9.0.1",
+    "@types/aws-lambda": "^8.10.145",
+    "@types/uuid": "^10.0.0",
+    "axios": "^1.7.7",
+    "fastify": "^4.28.1",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.4",
+    "@vitest/coverage-v8": "^2.0.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}
