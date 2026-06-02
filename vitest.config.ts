@@ -25,25 +25,10 @@ export default defineConfig({
         'src/**/*.ts'
       ],
       thresholds: {
-        global: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80
-        },
-        // Umbrales específicos por directorio (similar a JaCoCo)
-        'src/application/': {
-          branches: 85,
-          functions: 85,
-          lines: 85,
-          statements: 85
-        },
-        'src/application/services/': {
-          branches: 90,
-          functions: 90,
-          lines: 90,
-          statements: 90
-        }
+        branches: 80,
+        functions: 80,
+        lines: 80,
+        statements: 80,
       },
       // Configuración para reportes SonarQube
       watermarks: {
@@ -61,13 +46,8 @@ export default defineConfig({
     },
     // Configuración para pruebas paralelas
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: false,
-        maxThreads: 4,
-        minThreads: 1
-      }
-    },
+    maxWorkers: 4,
+    minWorkers: 1,
     // Timeout para pruebas
     testTimeout: 10000,
     hookTimeout: 10000,

@@ -5,10 +5,6 @@ import { DynamoQueryConfiguration } from '../../../../src/adapter/out/persistenc
 import { EnvironmentVariablesPort, EnvironmentConstants } from '../../../../src/application/ports/out/environment/EnvironmentVariablesPort';
 import { ConfigRequest, HttpMethodType, AuthType } from '../../../../src/application/domain/ProxyRequest';
 
-// Mock AWS SDK
-vi.mock('@aws-sdk/client-dynamodb');
-vi.mock('@aws-sdk/util-dynamodb');
-
 describe('DynamoQueryConfiguration', () => {
   let dynamoQueryConfiguration: DynamoQueryConfiguration;
   let mockEnvironmentVariablesPort: EnvironmentVariablesPort;
@@ -39,8 +35,8 @@ describe('DynamoQueryConfiguration', () => {
         throw new Error(`Unknown environment variable: ${key}`);
       });
 
-    mockDynamoClient = new DynamoDBClient({ region: 'us-east-1' });
-    vi.mocked(DynamoDBClient).mockImplementation(() => mockDynamoClient);
+    mockDynamoClient = { send: vi.fn() } as unknown as DynamoDBClient;
+    vi.mocked(DynamoDBClient).mockImplementation(function() { return mockDynamoClient; });
 
     dynamoQueryConfiguration = new DynamoQueryConfiguration(mockEnvironmentVariablesPort);
   });

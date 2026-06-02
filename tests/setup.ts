@@ -1,21 +1,22 @@
 import { vi } from 'vitest';
 
 // Mock AWS SDK clients globally
+// Vitest 4: vi.fn() uses arrow functions internally; constructors must use function() syntax
 vi.mock('@aws-sdk/client-dynamodb', () => ({
-  DynamoDBClient: vi.fn(),
-  GetItemCommand: vi.fn(),
-  PutItemCommand: vi.fn(),
-  DeleteItemCommand: vi.fn()
+  DynamoDBClient: vi.fn(function() {}),
+  GetItemCommand: vi.fn(function() {}),
+  PutItemCommand: vi.fn(function() {}),
+  DeleteItemCommand: vi.fn(function() {})
 }));
 
 vi.mock('@aws-sdk/client-sqs', () => ({
-  SQSClient: vi.fn(),
-  SendMessageCommand: vi.fn()
+  SQSClient: vi.fn(function() {}),
+  SendMessageCommand: vi.fn(function() {})
 }));
 
 vi.mock('@aws-sdk/client-secrets-manager', () => ({
-  SecretsManagerClient: vi.fn(),
-  GetSecretValueCommand: vi.fn()
+  SecretsManagerClient: vi.fn(function() {}),
+  GetSecretValueCommand: vi.fn(function() {})
 }));
 
 vi.mock('@aws-sdk/util-dynamodb', () => ({

@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import type { CreateUserRequest, User } from '../../../../application/domain/User';
 import type { UserRepositoryPort } from '../../../../application/ports/out/persistence/UserRepositoryPort';
 
@@ -7,7 +7,7 @@ export class InMemoryUserRepository implements UserRepositoryPort {
 
   async createUser(input: CreateUserRequest): Promise<User> {
     const user: User = {
-      id: uuidv4(),
+      id: randomUUID(),
       name: input.name,
       email: input.email,
       createdAt: new Date(),
